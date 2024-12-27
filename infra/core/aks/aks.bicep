@@ -22,7 +22,10 @@ param dnsPrefix string = ''
 @description('Disk size (in GB) to provision for each of the agent pool nodes. This value ranges from 0 to 1023. Specifying 0 will apply the default disk size for that agentVMSize.')
 @minValue(0)
 @maxValue(1023)
-param systemOsDiskSizeGB int = 128
+param systemOsDiskSizeGB int = 40
+
+@description('Disk Type for agent pool VMs')
+param systemOsDiskType string = 'Managed'
 
 @description('The number of nodes for the system node pool.')
 @minValue(1)
@@ -30,7 +33,7 @@ param systemOsDiskSizeGB int = 128
 param systemNodeCount int = 1
 
 @description('The size of the system Virtual Machine.')
-param systemVMSize string = 'standard_d4s_v5' // 4 vcpu, 16 GB memory
+param systemVMSize string = 'standard_d2_v2_promo' // 4 vcpu, 16 GB memory
 
 @description('The number of nodes for the graphrag node pool.')
 @minValue(1)
@@ -38,10 +41,10 @@ param systemVMSize string = 'standard_d4s_v5' // 4 vcpu, 16 GB memory
 param graphragNodeCount int = 1
 
 @description('The VM size of nodes running the GraphRAG API.')
-param graphragVMSize string = 'standard_d8s_v5' // 8 vcpu, 32 GB memory
+param graphragVMSize string = 'standard_b2s' // 8 vcpu, 32 GB memory
 
 @description('The VM size of nodes running GraphRAG indexing jobs.')
-param graphragIndexingVMSize string = 'standard_e8s_v5' // 8 vcpus, 64 GB memory
+param graphragIndexingVMSize string = 'standard_b2s' // 8 vcpus, 64 GB memory
 
 @description('User name for the Linux Virtual Machines.')
 param linuxAdminUsername string = 'azureuser'
@@ -99,8 +102,9 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
           maxSurge: '50%'
         }
         minCount: 1
-        maxCount: 10
+        maxCount: 1
         osDiskSizeGB: systemOsDiskSizeGB
+        osDiskType: systemOsDiskType
         count: systemNodeCount
         vmSize: systemVMSize
         osType: 'Linux'
@@ -135,6 +139,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
       serviceCidr: '10.3.0.0/16'  // must not overlap with any subnet IP ranges
       dnsServiceIP: '10.3.0.10'   // must be within the range specified in serviceCidr
       podCidr: '10.244.0.0/16'    // IP range from which to assign pod IPs
+      loadBalancerSku: 'basic'
     }
     autoUpgradeProfile: autoUpgradeProfile
     oidcIssuerProfile: {
@@ -155,8 +160,9 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
         maxSurge: '50%'
       }
       minCount: 1
-      maxCount: 10
+      maxCount: 1
       osDiskSizeGB: systemOsDiskSizeGB
+      osDiskType: systemOsDiskType
       count: graphragNodeCount
       vmSize: graphragVMSize
       osType: 'Linux'
@@ -181,12 +187,15 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
         maxSurge: '50%'
       }
       minCount: 0
-      maxCount: 10
+      maxCount: 1
       osDiskSizeGB: systemOsDiskSizeGB
+      osDiskType: systemOsDiskType
       count: 0
       vmSize: graphragIndexingVMSize
       osType: 'Linux'
       mode: 'User'
+      scaleSetEvictionPolicy: 'Delete' // Delete nodes on eviction
+      scaleSetPriority: 'Spot' // Use Spot VMs
       enableEncryptionAtHost: enableEncryptionAtHost
       vnetSubnetID: subnetId
       nodeLabels: {
