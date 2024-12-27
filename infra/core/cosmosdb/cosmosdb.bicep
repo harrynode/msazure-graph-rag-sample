@@ -67,14 +67,14 @@ resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2022-11-15' = {
     backupPolicy: {
       type: 'Periodic'
       periodicModeProperties: {
-        backupIntervalInMinutes: 240
+        backupIntervalInMinutes: 1440
         backupRetentionIntervalInHours: 8
-        backupStorageRedundancy: 'Geo'
+        backupStorageRedundancy: 'Local'
       }
     }
     networkAclBypassResourceIds: []
     capacity: {
-      totalThroughputLimit: 4000
+      totalThroughputLimit: 40
     }
   }
 }
