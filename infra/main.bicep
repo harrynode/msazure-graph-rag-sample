@@ -189,8 +189,8 @@ module aks 'core/aks/aks.bicep' = {
   params:{
     clusterName: '${abbrs.containerServiceManagedClusters}${resourceBaseNameFinal}'
     location: location
-    graphragVMSize: 'standard_d8s_v5'           // 8 vcpu, 32 GB memory
-    graphragIndexingVMSize: 'standard_e8s_v5'   // 8 vcpus, 64 GB memory
+    graphragVMSize: 'standard_b2s'           // 8 vcpu, 32 GB memory
+    graphragIndexingVMSize: 'standard_b2s'   // 8 vcpus, 64 GB memory
     clusterAdmins: ['${deployerPrincipalId}']
     sshRSAPublicKey: aksSshRsaPublicKey
     logAnalyticsWorkspaceId: log.outputs.id

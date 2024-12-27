@@ -43,6 +43,7 @@ param publicIpName string = 'apimPublicIP'
 @description('SKU for the public IP address used to access the API Management service.')
 @allowed([
   'Standard'
+  'Basic'
 ])
 param publicIpSku string = 'Standard'
 
